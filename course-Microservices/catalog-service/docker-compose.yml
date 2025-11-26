@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: coursehub-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coursehub
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - mysql
+    networks:
+      - coursehub-network
+
+  mysql:
+    image: mysql:8
+    container_name: coursehub-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: coursehub
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - coursehub-network
+
+volumes:
+  mysql-data:
+
+networks:
+  coursehub-network:
+    driver: bridge

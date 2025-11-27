@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.zjsu.lyy</groupId>
-	<artifactId>course</artifactId>
+	<artifactId>user-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>course</name>
-	<description>SpingBoot-Course</description>
+	<name>User Service</name>
+	<description>SpingBoot-User-Service</description>
 	<url/>
 	<licenses>
 		<license/>

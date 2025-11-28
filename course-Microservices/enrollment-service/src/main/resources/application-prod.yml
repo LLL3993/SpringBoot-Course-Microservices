@@ -1,20 +1,19 @@
 server:
   port: 8083
+
 spring:
+  application:
+    name: enrollment-service
   datasource:
-    url: jdbc:mysql://localhost:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/enrollment_db?useSSL=false&serverTimezone=UTC
     username: root
     password: Lyy135792468
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      maximum-pool-size: 15
-      minimum-idle: 5
-      connection-test-query: SELECT 1
   jpa:
-    show-sql: false
     hibernate:
-      ddl-auto: validate   # 生产只校验
-  # sql:
-  #   init:
-  #     mode: always
-  #     data-locations: classpath:db/data.sql
+      ddl-auto: update
+    show-sql: true
+# 服务地址配置
+user-service:
+  url: http://localhost:8081
+catalog-service:
+  url: http://localhost:8082

@@ -8,3 +8,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
+user-service:
+  url: http://localhost:8081
+catalog-service:
+  url: http://localhost:8082

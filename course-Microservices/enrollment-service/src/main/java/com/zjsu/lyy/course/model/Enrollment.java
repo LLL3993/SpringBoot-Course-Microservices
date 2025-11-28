@@ -1,4 +1,6 @@
 package com.zjsu.lyy.course.model;
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -17,7 +19,7 @@ public class Enrollment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JsonIgnore
+    // @JsonIgnore
     private String id;
     
     @Column(name = "course_id", nullable = false)
@@ -40,4 +42,11 @@ public class Enrollment {
     public void setStatus(Status active) {
         this.status = active;
     }
+
+    @Column(name = "enrolled_at")
+    private LocalDateTime enrolledAt;
+
+    // getter & setter
+    public LocalDateTime getEnrolledAt() { return enrolledAt; }
+    public void setEnrolledAt(LocalDateTime enrolledAt) { this.enrolledAt = enrolledAt; }
 }

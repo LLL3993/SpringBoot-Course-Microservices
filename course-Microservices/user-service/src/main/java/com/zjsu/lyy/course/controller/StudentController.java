@@ -37,6 +37,16 @@ public class StudentController {
         return resp;
     }
 
+    @GetMapping("/studentId/{studentId}")
+    public Map<String, Object> getOne(@PathVariable String studentId) {
+        Student stu = service.getByStudentId(studentId);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("code", 200);
+        resp.put("message", "Success");
+        resp.put("data", stu);
+        return resp;
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Map<String, Object> create(@Valid @RequestBody Student student) {

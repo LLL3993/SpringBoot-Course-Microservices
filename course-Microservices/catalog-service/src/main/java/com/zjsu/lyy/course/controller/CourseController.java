@@ -39,6 +39,19 @@ public class CourseController {
         return resp;
     }
 
+    @GetMapping("/{courseId}")
+    public Map<String, Object> one(@PathVariable String courseId) {
+        Course c = service.getByCode(courseId); // 你用 courseId 字段存的是编号
+        if (c == null) {
+            throw new IllegalArgumentException("Course not found");
+        }
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("code", 200);
+        resp.put("message", "Success");
+        resp.put("data", c);
+        return resp;
+    }
+    
     @GetMapping("/code/{code}")
     public Map<String, Object> getOne(@PathVariable String code) {
         Course c = service.getByCode(code);

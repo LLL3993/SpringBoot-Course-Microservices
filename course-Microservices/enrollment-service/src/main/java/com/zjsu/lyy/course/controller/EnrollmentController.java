@@ -26,9 +26,9 @@ public class EnrollmentController {
         return resp;
     }
 
-    @GetMapping("/course/{courseCode}")
-    public Map<String, Object> byCourse(@PathVariable String courseCode) {
-        List<Enrollment> list = service.getByCourse(courseCode);
+    @GetMapping("/course/{courseId}")
+    public Map<String, Object> byCourse(@PathVariable String courseId) {
+        List<Enrollment> list = service.getByCourse(courseId);
         Map<String, Object> resp = new HashMap<>();
         resp.put("code", 200);
         resp.put("message", "Success");
@@ -46,12 +46,12 @@ public class EnrollmentController {
         return resp;
     }
 
-    public static record EnrollDTO(String courseCode, String studentId) {}
+    public static record EnrollDTO(String courseId, String studentId) {}
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Map<String, Object> create(@RequestBody EnrollDTO dto) {
-        Enrollment e = service.enroll(dto.courseCode, dto.studentId);
+        Enrollment e = service.enroll(dto.courseId, dto.studentId);
         Map<String, Object> resp = new HashMap<>();
         resp.put("code", 201);
         resp.put("message", "Enrolled");

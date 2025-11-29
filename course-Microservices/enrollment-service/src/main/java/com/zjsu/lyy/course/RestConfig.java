@@ -1,4 +1,4 @@
-package com.zjsu.lyy.course.config;
+package com.zjsu.lyy.course;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

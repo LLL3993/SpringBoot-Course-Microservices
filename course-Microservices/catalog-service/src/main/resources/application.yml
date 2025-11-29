@@ -14,7 +14,19 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: validate   # 生产只校验
-  # sql:
-  #   init:
-  #     mode: always
-  #     data-locations: classpath:db/data.sql
+  
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:localhost:8848}
+        namespace: dev
+        group: COURSEHUB_GROUP
+        ephemeral: true
+        heartbeat-interval: 5000
+        heartbeat-timeout: 15000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

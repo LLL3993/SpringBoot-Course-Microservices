@@ -3,6 +3,7 @@ package com.zjsu.lyy.course.controller;
 import com.zjsu.lyy.course.model.Student;
 import com.zjsu.lyy.course.service.StudentService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,9 @@ import java.util.Map;
 public class StudentController {
     private final StudentService service;
 
+    @Value("${server.port}")
+    private String port;
+
     public StudentController(StudentService service) { this.service = service; }
 
     @GetMapping
@@ -24,6 +28,7 @@ public class StudentController {
         resp.put("code", 200);
         resp.put("message", "Success");
         resp.put("data", list);
+        resp.put("port", port);
         return resp;
     }
 

@@ -3,6 +3,7 @@ package com.zjsu.lyy.course.controller;
 import com.zjsu.lyy.course.model.Course;
 import com.zjsu.lyy.course.service.CourseService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,9 @@ public class CourseController {
 
     private final CourseService service;
 
+    @Value("${server.port}")
+    private String port;
+
     public CourseController(CourseService service) {
         this.service = service;
     }
@@ -25,6 +29,7 @@ public class CourseController {
         resp.put("code", 200);
         resp.put("message", "Success");
         resp.put("data", service.getAll());
+        resp.put("port", port);
         return resp;
     }
 

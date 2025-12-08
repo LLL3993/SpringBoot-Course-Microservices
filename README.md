@@ -206,3 +206,82 @@ curl http://localhost:8083/api/enrollments
 | 选课失败“Course not found: null” | DTO 字段名与 JSON 不匹配    | 统一用 `courseId`                     |
 | 数据库启动失败                   | 健康检查超时                | 增加 `interval/retries`               |
 | 端口冲突                         | 本地已占用                  | 修改 `docker-compose.yml` 端口映射    |
+
+
+
+
+
+
+
+
+
+
+
+
+
+# V1.0.0
+
+## 1. 快速启动
+```bash
+# 1. 克隆代码
+https://github.com/LLL3993/SpringBoot-Course-Microservices.git
+
+# 2. 一键启动（含 Nacos + MySQL + 3 个业务服务）
+docker-compose up -d
+
+# 3. 访问 Nacos 控制台
+open http://localhost:8848/nacos   # 账号/密码：nacos / nacos
+```
+
+
+
+## 2.Nacos 控制台截图
+
+| 截图项     | 说明                                                         |
+| ---------- | ------------------------------------------------------------ |
+| ① 服务列表 | 能看到 `user-service`、`catalog-service`、`enrollment-service` 均处于“健康”状态 |
+| ② 多实例   | 3 个 `user-service` 实例（端口 8084/8085/8086）同时在线      |
+
+
+
+## 3. 负载均衡 & 故障转移验证
+
+### 3.1 负载均衡
+
+多次调用 Enrollment 接口，返回的端口号均匀分布：
+
+```bash
+for i in {1..10}; do \
+  curl -s http://localhost:8083/api/enrollments/test | jq '.port'; \
+done
+```
+
+预期输出：8084 / 8085 / 8086 随机出现。
+
+
+
+### 3.2 故障转移
+
+手动停掉一个 user-service 实例（如 8085）：
+
+```bash
+docker stop user-service-2
+```
+
+继续请求，**无 8085 返回**且请求**仍全部成功**。
+
+
+
+## 4. 目录结构规范
+
+SpringBoot-Course-Microservices
+├─ docker-compose.yml
+├─ README.md
+├─ scripts
+│  └─ nacos-test.sh      # 一键验证脚本
+├─ user-service
+│  └─ src/main/resources/application.yml
+├─ catalog-service
+│  └─ src/main/resources/application.yml
+└─ enrollment-service
+   └─ src/main/resources/application.yml

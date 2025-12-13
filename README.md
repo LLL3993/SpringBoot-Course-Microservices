@@ -219,7 +219,7 @@ curl http://localhost:8083/api/enrollments
 
 
 
-# V1.0.0
+# V1.1.0
 
 ## 1. 快速启动
 ```bash
@@ -285,3 +285,61 @@ SpringBoot-Course-Microservices
 │  └─ src/main/resources/application.yml
 └─ enrollment-service
    └─ src/main/resources/application.yml
+
+
+
+
+
+
+
+
+
+# V1.2.0
+
+## 实验目标
+- 基于 Week07（Nacos 服务注册与发现）继续迭代
+- 在 Enrollment-Service 中 **替换 RestTemplate 为 OpenFeign**
+- 为 User / Catalog 服务调用 **配置 Resilience4j 熔断器**（失败率 50 %，滑动窗口 10 次）
+- **多实例部署**：User & Catalog 各 3 副本，验证负载均衡
+- 观察 **停机场景下降级逻辑** 与 **负载均衡流量分发**
+
+## 1. 快速启动
+
+````bash
+# 1. 克隆代码
+https://github.com/LLL3993/SpringBoot-Course-Microservices.git
+
+# 2. 一键启动（含 Nacos + MySQL + 3 个业务服务）
+docker-compose up -d
+
+# 3. 访问 Nacos 控制台
+open http://localhost:8848/nacos   # 账号/密码：nacos / naco
+````
+
+## 2.验证
+
+| 地址                                    | 说明                        |
+| --------------------------------------- | --------------------------- |
+| <http://localhost:8848>                 | Nacos 控制台（nacos/nacos） |
+| <http://localhost:8083/api/enrollments> | Enrollment 入口             |
+| <http://localhost:8083/health/test/lb>  | 负载均衡测试端点            |
+
+## 3.负载均衡演示
+
+连续调用
+
+```bash
+for i in {1..9}; do curl -s http://localhost:8083/health/test/lb; done
+```
+
+可看到 user  三个实例轮询出现。
+
+------
+
+## 4.熔断降级小结
+
+1. 关闭全部 user-service 实例 → Nacos 列表瞬间为空。
+2. LoadBalancer 抛出 `IllegalStateException`，**非 HTTP 层异常**，默认不计入 Resilience4j。
+3. 因此 **minimumNumberOfCalls=10 时永不开闸**，fallback 不会被调用；
+   若将 `IllegalStateException` 加入 `recordExceptions` 并调小 `minimumNumberOfCalls` 可立即触发降级。
+4. 结论：本实验配置下，“全停”场景无法触发 fallback，属于框架官方行为。

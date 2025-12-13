@@ -1,5 +1,6 @@
 package com.zjsu.lyy.course.controller;
 
+import com.zjsu.lyy.course.dto.StudentDto;
 import com.zjsu.lyy.course.model.Student;
 import com.zjsu.lyy.course.service.StudentService;
 import jakarta.validation.Valid;
@@ -43,13 +44,20 @@ public class StudentController {
     }
 
     @GetMapping("/studentId/{studentId}")
-    public Map<String, Object> getOne(@PathVariable String studentId) {
+    public StudentDto getOne(@PathVariable String studentId) {
         Student stu = service.getByStudentId(studentId);
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("code", 200);
-        resp.put("message", "Success");
-        resp.put("data", stu);
-        return resp;
+        if (stu == null) {
+            throw new IllegalArgumentException("Student not found");
+        }
+        StudentDto dto = new StudentDto();
+        dto.setId(stu.getId());
+        dto.setStudentId(stu.getStudentId());
+        dto.setName(stu.getName());
+        dto.setMajor(stu.getMajor());
+        dto.setGrade(stu.getGrade());
+        dto.setEmail(stu.getEmail());
+        dto.setCreatedAt(stu.getCreatedAt());
+        return dto;          // 返回 DTO
     }
 
     @PostMapping

@@ -1,5 +1,6 @@
 package com.zjsu.lyy.course.controller;
 
+import com.zjsu.lyy.course.dto.CourseDto;
 import com.zjsu.lyy.course.model.Course;
 import com.zjsu.lyy.course.service.CourseService;
 import jakarta.validation.Valid;
@@ -45,16 +46,18 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}")
-    public Map<String, Object> one(@PathVariable String courseId) {
-        Course c = service.getByCode(courseId); // 你用 courseId 字段存的是编号
+    public CourseDto one(@PathVariable String courseId) {
+        Course c = service.getByCode(courseId);
         if (c == null) {
             throw new IllegalArgumentException("Course not found");
         }
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("code", 200);
-        resp.put("message", "Success");
-        resp.put("data", c);
-        return resp;
+        CourseDto dto = new CourseDto();
+        dto.setCode(c.getCode());
+        dto.setTitle(c.getTitle());
+        dto.setCapacity(c.getCapacity());
+        // 关键：保证 enrolled 不为 null
+        dto.setEnrolled(c.getEnrolled() != null ? c.getEnrolled() : 0);
+        return dto;          // 现在返回的是 DTO，不再是实体
     }
     
     @GetMapping("/code/{code}")

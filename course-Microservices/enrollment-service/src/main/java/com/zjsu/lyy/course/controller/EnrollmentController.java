@@ -5,6 +5,7 @@ import com.zjsu.lyy.course.service.EnrollmentService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -78,14 +79,22 @@ public class EnrollmentController {
         return resp;
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(IllegalArgumentException.class)
-    public Map<String,Object> handleNotFound(IllegalArgumentException ex){
-        Map<String,Object> resp = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleIAE(IllegalArgumentException ex) {
+        String msg = ex.getMessage();
+        Map<String, Object> resp = new HashMap<>();
+        // ① 服务停机相关 → 500
+        if (msg != null && (msg.contains("用户服务不可用") || msg.contains("课程服务不可用"))) {
+            resp.put("code", 500);
+            resp.put("message", msg);
+            resp.put("data", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
+        }
+        // ② 其它业务异常 → 404
         resp.put("code", 404);
-        resp.put("message", ex.getMessage());
+        resp.put("message", msg != null ? msg : "Resource not found");
         resp.put("data", null);
-        return resp;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resp);
     }
 
     @GetMapping("/test")
@@ -131,5 +140,15 @@ public class EnrollmentController {
         response.put("message", "Load balancing test");
         response.put("data", serviceResponses);
         return response;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
+        ex.printStackTrace(); // 关键：看看到底抛了什么
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("code", 500);
+        resp.put("message", "服务器内部错误: " + ex.getMessage());
+        resp.put("data", null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
     }
 }

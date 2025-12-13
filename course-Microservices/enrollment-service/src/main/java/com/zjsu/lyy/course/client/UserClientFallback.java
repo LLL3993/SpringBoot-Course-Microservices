@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserClientFallback implements UserClient {
+
     @Override
     public StudentDto getStudent(String studentId) {
-        throw new IllegalArgumentException("用户服务不可用，请稍后再试");
+        // 返回 null 表示服务不可用，业务层会抛异常
+        return null;
     }
 }

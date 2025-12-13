@@ -29,26 +29,16 @@ public class EnrollmentService {
     }
 
     public Enrollment enroll(String courseId, String studentId) {
-        // 1. 验证学生
-        try {
-            StudentDto student = userClient.getStudent(studentId);
-            if (student == null) {
-                throw new IllegalArgumentException("Student not found: " + studentId);
-            }
-        } catch (Exception ex) {
-            // 触发 fallback 后会抛 IllegalArgumentException
-            throw new IllegalArgumentException("Student not found: " + studentId);
+        // 1. 验证学生（Feign 自动 fallback）
+        StudentDto student = userClient.getStudent(studentId);
+        if (student == null) {
+            throw new IllegalArgumentException("用户服务不可用，请稍后再试");
         }
 
-        // 2. 验证课程
-        CourseDto course;
-        try {
-            course = catalogClient.getCourse(courseId);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("Course not found: " + courseId);
-        }
+        // 2. 验证课程（Feign 自动 fallback）
+        CourseDto course = catalogClient.getCourse(courseId);
         if (course == null) {
-            throw new IllegalArgumentException("Course not found: " + courseId);
+            throw new IllegalArgumentException("课程服务不可用，请稍后再试");
         }
 
         // 3. 容量检查
@@ -73,9 +63,9 @@ public class EnrollmentService {
         enrollment.setStatus(Enrollment.Status.ACTIVE);
         enrollment.setEnrolledAt(LocalDateTime.now());
         return enrollmentRepository.save(enrollment);
-
-        // 注意：作业不要求再调 PUT 更新已选人数，已省略
     }
+
+    /* ---------- 原有接口，一字未动 ---------- */
 
     public List<Enrollment> getAll() {
         return enrollmentRepository.findAll();

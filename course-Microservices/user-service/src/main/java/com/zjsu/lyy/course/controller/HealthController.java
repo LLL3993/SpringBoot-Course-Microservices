@@ -1,5 +1,6 @@
 package com.zjsu.lyy.course.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -24,5 +25,13 @@ public class HealthController {
             return Map.of("status", "DOWN",
                           "error", e.getMessage());
         }
+    }
+
+    @Value("${server.port}")
+    private String port;
+
+    @GetMapping("/api/identify")
+    public Map<String,String> identify(){
+        return Map.of("instance", getClass().getSimpleName(), "port", port);
     }
 }

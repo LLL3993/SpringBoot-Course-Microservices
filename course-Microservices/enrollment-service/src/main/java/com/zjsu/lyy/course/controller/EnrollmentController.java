@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,12 +18,6 @@ import java.util.ArrayList;
 public class EnrollmentController {
     private final EnrollmentService service;
     private final RestTemplate restTemplate;
-
-    @Value("${user-service.url}")
-    private String userServiceUrl;
-
-    @Value("${catalog-service.url}")
-    private String catalogServiceUrl;
 
     @Autowired
     public EnrollmentController(EnrollmentService service, RestTemplate restTemplate) { 

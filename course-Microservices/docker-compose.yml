@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # === Nacos：带健康检查 ===
+  # === Nacos：单例 + 健康检查 ===
   nacos:
     image: nacos/nacos-server:v2.2.3
     container_name: nacos
@@ -14,14 +14,14 @@ services:
       - nacos-data:/home/nacos/data
     networks:
       - course-network
-    healthcheck:                    # 关键：等 gRPC 端口就绪
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/v1/ns/operator/metrics"]
       interval: 10s
       timeout: 5s
       retries: 8
       start_period: 30s
 
-  # === 数据库（无改动） ===
+  # === 数据库（与原文件一致） ===
   user-db:
     image: mysql:8.0
     container_name: user-db
@@ -76,13 +76,12 @@ services:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
 
-  # === 微服务：等 nacos healthy 再启动 ===
-  user-service:
-    build:
-      context: ./user-service
-      dockerfile: Dockerfile
-    container_name: user-service
+  # ========== 3 实例 user-service ==========
+  user-service-1:
+    build: ./user-service
+    container_name: user-service-1
     environment:
+      SERVER_PORT: 8081
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: user_user
@@ -92,17 +91,55 @@ services:
       - "8081:8081"
     depends_on:
       nacos:
-        condition: service_healthy   # 等 nacos 健康再启动
+        condition: service_healthy
     networks:
       - course-network
-    restart: on-failure:5            # 兜底重试
+    restart: on-failure:5
 
-  catalog-service:
-    build:
-      context: ./catalog-service
-      dockerfile: Dockerfile
-    container_name: catalog-service
+  user-service-2:
+    build: ./user-service
+    container_name: user-service-2
     environment:
+      SERVER_PORT: 8084
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: user_user
+      SPRING_DATASOURCE_PASSWORD: user_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8084:8084"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  user-service-3:
+    build: ./user-service
+    container_name: user-service-3
+    environment:
+      SERVER_PORT: 8085
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://user-db:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: user_user
+      SPRING_DATASOURCE_PASSWORD: user_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8085:8085"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  # ========== 3 实例 catalog-service ==========
+  catalog-service-1:
+    build: ./catalog-service
+    container_name: catalog-service-1
+    environment:
+      SERVER_PORT: 8082
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: catalog_user
@@ -117,21 +154,95 @@ services:
       - course-network
     restart: on-failure:5
 
-  enrollment-service:
-    build:
-      context: ./enrollment-service
-      dockerfile: Dockerfile
-    container_name: enrollment-service
+  catalog-service-2:
+    build: ./catalog-service
+    container_name: catalog-service-2
     environment:
+      SERVER_PORT: 8086
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: catalog_user
+      SPRING_DATASOURCE_PASSWORD: catalog_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8086:8086"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  catalog-service-3:
+    build: ./catalog-service
+    container_name: catalog-service-3
+    environment:
+      SERVER_PORT: 8087
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://catalog-db:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: catalog_user
+      SPRING_DATASOURCE_PASSWORD: catalog_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8087:8087"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  # ========== 3 实例 enrollment-service ==========
+  enrollment-service-1:
+    build: ./enrollment-service
+    container_name: enrollment-service-1
+    environment:
+      SERVER_PORT: 8083
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://enrollment-db:3306/enrollment_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: enrollment_user
       SPRING_DATASOURCE_PASSWORD: enrollment_pass
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
-      USER_SERVICE_URL: http://user-service:8081
-      CATALOG_SERVICE_URL: http://catalog-service:8082
     ports:
       - "8083:8083"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  enrollment-service-2:
+    build: ./enrollment-service
+    container_name: enrollment-service-2
+    environment:
+      SERVER_PORT: 8088
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://enrollment-db:3306/enrollment_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: enrollment_user
+      SPRING_DATASOURCE_PASSWORD: enrollment_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8088:8088"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+
+  enrollment-service-3:
+    build: ./enrollment-service
+    container_name: enrollment-service-3
+    environment:
+      SERVER_PORT: 8089
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://enrollment-db:3306/enrollment_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: enrollment_user
+      SPRING_DATASOURCE_PASSWORD: enrollment_pass
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    ports:
+      - "8089:8089"
     depends_on:
       nacos:
         condition: service_healthy

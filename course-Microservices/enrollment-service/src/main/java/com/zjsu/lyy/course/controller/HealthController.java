@@ -1,6 +1,10 @@
 package com.zjsu.lyy.course.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Map;
@@ -24,5 +28,14 @@ public class HealthController {
             return Map.of("status", "DOWN",
                           "error", e.getMessage());
         }
+    }
+
+    @Autowired
+    @LoadBalanced
+    private RestTemplate restTemplate;
+
+    @GetMapping("/test/lb")
+    public String testLb() {
+        return restTemplate.getForObject("http://catalog-service/health/api/identify", String.class);
     }
 }

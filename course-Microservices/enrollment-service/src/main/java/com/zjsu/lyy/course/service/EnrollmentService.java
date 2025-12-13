@@ -1,95 +1,80 @@
 package com.zjsu.lyy.course.service;
 
+import com.zjsu.lyy.course.client.UserClient;
+import com.zjsu.lyy.course.client.CatalogClient;
+import com.zjsu.lyy.course.dto.StudentDto;
+import com.zjsu.lyy.course.dto.CourseDto;
 import com.zjsu.lyy.course.model.Enrollment;
 import com.zjsu.lyy.course.repository.EnrollmentRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
-    private final RestTemplate restTemplate;
+    private final UserClient userClient;
+    private final CatalogClient catalogClient;
 
-    @Value("${user-service.url}")
-    private String userServiceUrl;
-
-    @Value("${catalog-service.url}")
-    private String catalogServiceUrl;
-
-    public EnrollmentService(EnrollmentRepository enrollmentRepository, RestTemplate restTemplate) {
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             UserClient userClient,
+                             CatalogClient catalogClient) {
         this.enrollmentRepository = enrollmentRepository;
-        this.restTemplate = restTemplate;
+        this.userClient = userClient;
+        this.catalogClient = catalogClient;
     }
 
     public Enrollment enroll(String courseId, String studentId) {
-        // 1. 验证学生是否存在
-        String userUrl = userServiceUrl + "/api/students/studentId/" + studentId;
+        // 1. 验证学生
         try {
-            restTemplate.getForObject(userUrl, Map.class);
-        } catch (HttpClientErrorException.NotFound e) {
+            StudentDto student = userClient.getStudent(studentId);
+            if (student == null) {
+                throw new IllegalArgumentException("Student not found: " + studentId);
+            }
+        } catch (Exception ex) {
+            // 触发 fallback 后会抛 IllegalArgumentException
             throw new IllegalArgumentException("Student not found: " + studentId);
         }
 
-        // 2. 验证课程是否存在
-        String courseUrl = catalogServiceUrl + "/api/courses/" + courseId;
-        Map<String, Object> courseResponse;
+        // 2. 验证课程
+        CourseDto course;
         try {
-            courseResponse = restTemplate.getForObject(courseUrl, Map.class);
-        } catch (HttpClientErrorException.NotFound e) {
+            course = catalogClient.getCourse(courseId);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Course not found: " + courseId);
+        }
+        if (course == null) {
             throw new IllegalArgumentException("Course not found: " + courseId);
         }
 
-        // 3. 提取课程容量和已选人数
-        Map<String, Object> courseData = (Map<String, Object>) courseResponse.get("data");
-        Integer capacity = (Integer) courseData.get("capacity");
-        Integer enrolled = (Integer) courseData.get("enrolled");
-
-        if (enrolled == null || capacity == null) {
+        // 3. 容量检查
+        Integer capacity = course.getCapacity();
+        Integer enrolled = course.getEnrolled();
+        if (capacity == null || enrolled == null) {
             throw new IllegalArgumentException("Course data is incomplete");
         }
-
-        // 4. 检查课程容量
         if (enrolled >= capacity) {
             throw new IllegalArgumentException("Course is full");
         }
 
-        // 5. 检查是否已选课
+        // 4. 重复选课检查
         if (enrollmentRepository.existsByCourseIdAndStudentId(courseId, studentId)) {
             throw new IllegalArgumentException("Already enrolled in this course");
         }
 
-        // 6. 创建选课记录
+        // 5. 创建选课记录
         Enrollment enrollment = new Enrollment();
         enrollment.setCourseId(courseId);
         enrollment.setStudentId(studentId);
         enrollment.setStatus(Enrollment.Status.ACTIVE);
         enrollment.setEnrolledAt(LocalDateTime.now());
+        return enrollmentRepository.save(enrollment);
 
-        Enrollment saved = enrollmentRepository.save(enrollment);
-
-        // 7. 更新课程已选人数（非阻塞）
-        try {
-            updateCourseEnrolledCount(courseId, enrolled + 1);
-        } catch (Exception e) {
-            System.err.println("Failed to update course enrolled count: " + e.getMessage());
-        }
-
-        return saved;
-    }
-
-    private void updateCourseEnrolledCount(String courseId, int newCount) {
-        String url = catalogServiceUrl + "/api/courses/" + courseId;
-        Map<String, Object> updateData = Map.of("enrolled", newCount);
-        restTemplate.put(url, updateData);
+        // 注意：作业不要求再调 PUT 更新已选人数，已省略
     }
 
     public List<Enrollment> getAll() {
@@ -107,18 +92,6 @@ public class EnrollmentService {
     public void drop(String id) {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Enrollment not found: " + id));
-
-        // 可选：减少课程已选人数
-        try {
-            String courseUrl = catalogServiceUrl + "/api/courses/" + enrollment.getCourseId();
-            Map<String, Object> courseResponse = restTemplate.getForObject(courseUrl, Map.class);
-            Map<String, Object> courseData = (Map<String, Object>) courseResponse.get("data");
-            Integer enrolled = (Integer) courseData.get("enrolled");
-            updateCourseEnrolledCount(enrollment.getCourseId(), enrolled - 1);
-        } catch (Exception e) {
-            System.err.println("Failed to update course enrolled count on drop: " + e.getMessage());
-        }
-
         enrollmentRepository.delete(enrollment);
     }
 }

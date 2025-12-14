@@ -87,8 +87,11 @@ services:
       SPRING_DATASOURCE_USERNAME: user_user
       SPRING_DATASOURCE_PASSWORD: user_pass
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
     ports:
       - "8081:8081"
+    expose:                      # <<< 新增
+      - 8081
     depends_on:
       nacos:
         condition: service_healthy
@@ -106,8 +109,11 @@ services:
       SPRING_DATASOURCE_USERNAME: user_user
       SPRING_DATASOURCE_PASSWORD: user_pass
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
     ports:
       - "8084:8084"
+    expose:                      # <<< 新增
+      - 8084
     depends_on:
       nacos:
         condition: service_healthy
@@ -125,8 +131,11 @@ services:
       SPRING_DATASOURCE_USERNAME: user_user
       SPRING_DATASOURCE_PASSWORD: user_pass
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
     ports:
       - "8085:8085"
+    expose:                      # <<< 新增
+      - 8085
     depends_on:
       nacos:
         condition: service_healthy
@@ -147,6 +156,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8082:8082"
+    expose:                      # <<< 新增
+      - 8082
     depends_on:
       nacos:
         condition: service_healthy
@@ -166,6 +177,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8086:8086"
+    expose:                      # <<< 新增
+      - 8086
     depends_on:
       nacos:
         condition: service_healthy
@@ -185,6 +198,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8087:8087"
+    expose:                      # <<< 新增
+      - 8087
     depends_on:
       nacos:
         condition: service_healthy
@@ -205,6 +220,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8083:8083"
+    expose:                      # <<< 新增
+      - 8083
     depends_on:
       nacos:
         condition: service_healthy
@@ -224,6 +241,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8088:8088"
+    expose:                      # <<< 新增
+      - 8088
     depends_on:
       nacos:
         condition: service_healthy
@@ -243,6 +262,8 @@ services:
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
     ports:
       - "8089:8089"
+    expose:                      # <<< 新增
+      - 8089
     depends_on:
       nacos:
         condition: service_healthy
@@ -257,10 +278,17 @@ services:
       SERVER_PORT: 8090
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
-      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa
+      SPRING_CLOUD_NACOS_DISCOVERY_TIMEOUT: 10000        # 10 秒
+      SPRING_CLOUD_LOADBALANCER_HEALTH_CHECK_INTERVAL: 30
+      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
       JWT_EXPIRATION: 86400000
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_LOADBALANCER: DEBUG
+      LOGGING_LEVEL_REACTOR_NETTY: DEBUG
+      SPRING_CLOUD_LOADBALANCER_RETRY_ENABLED: "true"
     ports:
       - "8090:8090"
+    expose:                      # <<< 新增
+      - 8090
     depends_on:
       nacos:
         condition: service_healthy

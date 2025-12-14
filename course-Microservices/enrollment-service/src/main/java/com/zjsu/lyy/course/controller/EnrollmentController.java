@@ -3,6 +3,8 @@ package com.zjsu.lyy.course.controller;
 import com.zjsu.lyy.course.model.Enrollment;
 import com.zjsu.lyy.course.service.EnrollmentService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 public class EnrollmentController {
     private final EnrollmentService service;
     private final RestTemplate restTemplate;
-
+    
     @Autowired
     public EnrollmentController(EnrollmentService service, RestTemplate restTemplate) { 
         this.service = service; 
@@ -150,5 +152,14 @@ public class EnrollmentController {
         resp.put("message", "服务器内部错误: " + ex.getMessage());
         resp.put("data", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
+    }
+
+    @GetMapping("/hello")
+    public Map<String,Object> hello(
+            @RequestHeader(value = "X-User-Id", required = false) String uid,
+            @RequestHeader(value = "X-Username", required = false) String uname) {
+        System.out.println(">>> X-User-Id = " + uid);
+        System.out.println(">>> X-Username = " + uname);
+        return Map.of("msg", "hello gateway", "user", uname, "uid", uid);
     }
 }

@@ -100,4 +100,10 @@ public class CourseController {
         resp.put("data", null);
         return resp;
     }
+
+    @GetMapping("/hello")
+    public Map<String,Object> hello(@RequestHeader("X-User-Id")   String uid,
+                                    @RequestHeader("X-Username") String uname) {
+        return Map.of("msg", "hello gateway", "user", uname, "uid", uid);
+    }
 }

@@ -29,9 +29,14 @@ spring:
         ephemeral: true
         heartbeat-interval: 5000
         heartbeat-timeout: 15000
+        enabled: false      # 本地测试用
 
 management:
   endpoints:
     web:
       exposure:
         include: health
+
+jwt:
+  secret: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
+  expiration: 86400000

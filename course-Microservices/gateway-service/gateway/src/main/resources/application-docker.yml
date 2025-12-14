@@ -1,0 +1,58 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: false   # 手动写路由，不自动暴露
+      routes:
+        # ===== user-service =====
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=0
+        # ===== catalog-service =====
+        - id: catalog-service
+          uri: lb://catalog-service
+          predicates:
+            - Path=/api/courses/**
+          filters:
+            - StripPrefix=0
+        # ===== enrollment-service =====
+        - id: enrollment-service
+          uri: lb://enrollment-service
+          predicates:
+            - Path=/api/enrollments/**
+          filters:
+            - StripPrefix=0
+        # ===== 登录/注册 =====
+        - id: user-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+jwt:
+  secret: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
+  expiration: 86400000   # 24h
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

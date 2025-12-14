@@ -26,3 +26,7 @@ spring:
 logging:
   level:
     root: INFO
+
+jwt:
+  secret: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa1234567890!@#
+  expiration: 86400000

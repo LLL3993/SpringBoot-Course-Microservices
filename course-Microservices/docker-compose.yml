@@ -250,6 +250,24 @@ services:
       - course-network
     restart: on-failure:5
 
+  gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    environment:
+      SERVER_PORT: 8090
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      JWT_SECRET: course-cloud-2025-very-long-secret-key-256bits-aaaaaaaaaa
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8090:8090"
+    depends_on:
+      nacos:
+        condition: service_healthy
+    networks:
+      - course-network
+    restart: on-failure:5
+    
 networks:
   course-network:
     driver: bridge

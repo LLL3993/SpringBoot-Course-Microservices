@@ -24,6 +24,7 @@ spring:
         ephemeral: true
         heartbeat-interval: 5000
         heartbeat-timeout: 15000
+        enabled: false      # 本地测试用
 
 management:
   endpoints:

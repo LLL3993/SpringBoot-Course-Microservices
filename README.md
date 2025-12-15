@@ -343,3 +343,46 @@ for i in {1..9}; do curl -s http://localhost:8083/health/test/lb; done
 3. 因此 **minimumNumberOfCalls=10 时永不开闸**，fallback 不会被调用；
    若将 `IllegalStateException` 加入 `recordExceptions` 并调小 `minimumNumberOfCalls` 可立即触发降级。
 4. 结论：本实验配置下，“全停”场景无法触发 fallback，属于框架官方行为。
+
+
+
+# V2.1.0
+
+## 1.快速启动：
+
+```bash
+# 1. 克隆代码
+https://github.com/LLL3993/SpringBoot-Course-Microservices.git
+
+# 2. 一键启动（含 Nacos + MySQL + 3 个业务服务）
+docker-compose up -d
+
+# 3. 访问 Nacos 控制台
+open http://localhost:8848/nacos   # 账号/密码：nacos / naco
+```
+
+
+
+## 2. 体验 JWT 登录
+
+```bash
+# 登录 → 拿到 token
+curl -X POST http://localhost:8090/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"123456"}'
+
+# 使用 token 访问受保护接口，<token>为上面得到的token
+curl http://localhost:8090/api/users/students \
+     -H "Authorization: Bearer <token>"
+```
+
+
+
+##  3.核心模块说明
+
+| 模块               | 端口 | 职责                                           |
+| ------------------ | ---- | ---------------------------------------------- |
+| gateway-service    | 8090 | 路由转发、CORS、JWT 统一认证、白名单放行       |
+| user-service       | 8081 | 用户/权限管理、提供 `/api/auth/login` 登录接口 |
+| catalog-service    | 8082 | 课程目录管理                                   |
+| enrollment-service | 8083 | 选课/退课业务                                  |
